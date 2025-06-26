@@ -31,10 +31,14 @@ class TaskView(QWidget):
         due_label = QLabel("Due Date & Time:")
         add_section.addWidget(due_label)
         self.due_input = QDateTimeEdit()
-        self.due_input.setDateTime(QDateTime.currentDateTime())
-        self.due_input.setToolTip("This is the date and time when the task is due.")
+        self.due_input.setCalendarPopup(True)
+        self.due_input.setDisplayFormat("dd MMM yyyy, hh:mm AP")
+        now = QDateTime.currentDateTime()
+        self.due_input.setDateTime(now)
+        self.due_input.setMinimumDateTime(now)
+        self.due_input.setToolTip("Pick the date and time when the task is due. Click the calendar icon to select a date.")
         add_section.addWidget(self.due_input)
-        due_help = QLabel("<i>Set the exact date and time the task is due.</i>")
+        due_help = QLabel("<i>Click the calendar icon to pick a date. Use the time field to set the exact due time.</i>")
         due_help.setStyleSheet("font-size: 12px; color: #bbbbbb; margin-bottom: 4px;")
         add_section.addWidget(due_help)
         self.category_input = QLineEdit()
@@ -97,7 +101,12 @@ class TaskView(QWidget):
 
     def add_task(self):
         title = self.task_input.text().strip()
-        due = self.due_input.dateTime().toString("yyyy-MM-ddTHH:mm:ss")
+        due_qt = self.due_input.dateTime()
+        now = QDateTime.currentDateTime()
+        if due_qt < now:
+            self.status_label.setText("Due date/time cannot be in the past.")
+            return
+        due = due_qt.toString("yyyy-MM-ddTHH:mm:ss")
         category = self.category_input.text().strip() or None
         priority = self.priority_input.currentText()
         recur = self.recur_input.currentText().lower()
